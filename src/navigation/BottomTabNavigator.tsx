@@ -1,14 +1,19 @@
 import React from 'react';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
-import CharactersScreen from '../screens/CharacterScreen';
+import CharacterScreen from '../screens/CharacterScreen';
 import SettingsScreen from '../screens/SettingsScreen';
 
-const Tab = createBottomTabNavigator();
+export type BottomTabParamList = {
+  Characters: undefined;
+  Settings: undefined;
+};
 
-const BottomTabNavigator = () => {
+const Tab = createBottomTabNavigator<BottomTabParamList>();
+
+const BottomTabNavigator: React.FC = () => {
   return (
     <Tab.Navigator>
-      <Tab.Screen name="Characters" component={CharactersScreen} />
+      <Tab.Screen name="Characters" component={CharacterScreen} />
       <Tab.Screen name="Settings" component={SettingsScreen} />
     </Tab.Navigator>
   );

@@ -1,30 +1,53 @@
-import React from 'react';
-import {View, FlatList, StyleSheet, ListRenderItem} from 'react-native';
-import CharactersCard from '../components/CharactersCard';
-
-interface Character {
-  id: string;
-  name: string;
-  status: 'Alive' | 'Dead' | 'Unknown';
-}
-
-const charactersData: Character[] = [
-  {id: '1', name: 'Rick Sanchez', status: 'Alive'},
-  {id: '2', name: 'Morty Smith', status: 'Alive'},
-  {id: '3', name: 'Birdperson', status: 'Dead'},
-];
+import React, {useState, useEffect} from 'react';
+import {
+  View,
+  FlatList,
+  StyleSheet,
+  ActivityIndicator,
+  Text,
+} from 'react-native';
+import {getCharacters} from 'rickmortyapi';
+import {Character, ApiResponse, Info} from 'rickmortyapi';
+import CharacterCard from '../components/CharactersCard';
 
 const CharactersScreen: React.FC = () => {
-  const renderItem: ListRenderItem<Character> = ({item}) => (
-    <CharactersCard name={item.name} status={item.status} />
+  const [characters, setCharacters] = useState<Character[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response: ApiResponse<Info<Character[]>> = await getCharacters();
+        setCharacters(response.data.results || []);
+      } catch (err) {
+        setError('Failed to fetch data');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const renderItem = ({item}: {item: Character}) => (
+    <CharacterCard character={item} />
   );
+
+  if (loading) {
+    return <ActivityIndicator size="large" color="#0000ff" />;
+  }
+
+  if (error) {
+    return <Text style={styles.errorText}>{error}</Text>;
+  }
 
   return (
     <View style={styles.container}>
       <FlatList
-        data={charactersData}
+        data={characters}
         renderItem={renderItem}
-        keyExtractor={item => item.id}
+        keyExtractor={item => item.id.toString()}
       />
     </View>
   );
@@ -33,6 +56,11 @@ const CharactersScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  errorText: {
+    color: 'red',
+    textAlign: 'center',
+    marginTop: 20,
   },
 });
 
