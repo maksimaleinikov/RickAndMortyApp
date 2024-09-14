@@ -1,12 +1,13 @@
 import React from 'react';
-import {View, Text, StyleSheet, Image} from 'react-native';
+import {View, Text, StyleSheet, Image, TouchableOpacity} from 'react-native';
 import {Character} from 'rickmortyapi';
 
 interface CharacterCardProps {
   character: Character;
+  onPress: () => void;
 }
 
-const CharacterCard: React.FC<CharacterCardProps> = ({character}) => {
+const CharacterCard: React.FC<CharacterCardProps> = ({character, onPress}) => {
   const statusColor = {
     Alive: 'green',
     Dead: 'red',
@@ -14,15 +15,17 @@ const CharacterCard: React.FC<CharacterCardProps> = ({character}) => {
   };
 
   return (
-    <View style={styles.card}>
-      <Image source={{uri: character.image}} style={styles.image} />
-      <Text style={styles.name}>{character.name}</Text>
-      <Text style={[styles.status, {color: statusColor[character.status]}]}>
-        {character.status}
-      </Text>
-      <Text style={styles.species}>Species: {character.species}</Text>
-      <Text style={styles.gender}>Gender: {character.gender}</Text>
-    </View>
+    <TouchableOpacity onPress={onPress}>
+      <View style={styles.card}>
+        <Image source={{uri: character.image}} style={styles.image} />
+        <Text style={styles.name}>{character.name}</Text>
+        <Text style={[styles.status, {color: statusColor[character.status]}]}>
+          {character.status}
+        </Text>
+        <Text style={styles.species}>Species: {character.species}</Text>
+        <Text style={styles.gender}>Gender: {character.gender}</Text>
+      </View>
+    </TouchableOpacity>
   );
 };
 

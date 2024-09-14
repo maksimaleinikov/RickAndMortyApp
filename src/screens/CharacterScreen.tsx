@@ -5,12 +5,25 @@ import {
   StyleSheet,
   ActivityIndicator,
   Text,
+  TouchableOpacity,
 } from 'react-native';
 import {getCharacters} from 'rickmortyapi';
 import {Character, ApiResponse, Info} from 'rickmortyapi';
 import CharacterCard from '../components/CharactersCard';
+import {StackNavigationProp} from '@react-navigation/stack';
+import {RootStackParamList} from '../navigation/Navigation';
+import {useNavigation} from '@react-navigation/native';
+import {
+  CharacterNavigatorRoutes,
+  CharacterStackParamList,
+} from '../navigation/types';
+import {NativeStackScreenProps} from 'react-native-screens/lib/typescript/native-stack/types';
 
-const CharactersScreen: React.FC = () => {
+type Props<
+  RouteName extends keyof CharacterStackParamList = CharacterNavigatorRoutes,
+> = NativeStackScreenProps<CharacterStackParamList, RouteName>;
+
+const CharactersScreen: React.FC<Props> = ({navigation}) => {
   const [characters, setCharacters] = useState<Character[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -31,7 +44,12 @@ const CharactersScreen: React.FC = () => {
   }, []);
 
   const renderItem = ({item}: {item: Character}) => (
-    <CharacterCard character={item} />
+    <CharacterCard
+      character={item}
+      onPress={() =>
+        navigation.navigate(CharacterNavigatorRoutes.Details, {character: item})
+      }
+    />
   );
 
   if (loading) {

@@ -1,10 +1,30 @@
 import React from 'react';
-import {View, Text, StyleSheet} from 'react-native';
+import {View, Text, StyleSheet, Image} from 'react-native';
+import {RouteProp} from '@react-navigation/native';
+import {RootStackParamList} from '../navigation/Navigation';
+import {Character} from 'rickmortyapi';
+import {
+  CharacterNavigatorRoutes,
+  CharacterStackParamList,
+} from '../navigation/types';
+import {NativeStackScreenProps} from 'react-native-screens/lib/typescript/native-stack/types';
 
-const CharactersDetailsScreen: React.FC = () => {
+type Props<
+  RouteName extends keyof CharacterStackParamList = CharacterNavigatorRoutes,
+> = NativeStackScreenProps<CharacterStackParamList, RouteName>;
+
+const CharacterDetailsScreen: React.FC<Props> = ({route}) => {
+  const params = route.params;
+  if (!params) return null;
+  const {character} = params;
   return (
     <View style={styles.container}>
-      <Text>Character Details Screen</Text>
+      <Image source={{uri: character.image}} style={styles.image} />
+      <Text style={styles.name}>{character.name}</Text>
+      <Text>Status: {character.status}</Text>
+      <Text>Species: {character.species}</Text>
+      <Text>Gender: {character.gender}</Text>
+      <Text>Origin: {character.origin?.name}</Text>
     </View>
   );
 };
@@ -12,9 +32,20 @@ const CharactersDetailsScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
     alignItems: 'center',
+    justifyContent: 'center',
+    padding: 20,
+  },
+  image: {
+    width: 200,
+    height: 200,
+    borderRadius: 100,
+    marginBottom: 20,
+  },
+  name: {
+    fontSize: 24,
+    fontWeight: 'bold',
   },
 });
 
-export default CharactersDetailsScreen;
+export default CharacterDetailsScreen;

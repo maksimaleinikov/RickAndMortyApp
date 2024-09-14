@@ -8,7 +8,11 @@ export const getCharacters = async (): Promise<
 > => {
   try {
     const response = await axios.get(`${API_URL}/character`);
-    return response.data;
+    return {
+      status: response.status,
+      statusMessage: response.statusText,
+      data: response.data,
+    };
   } catch (error) {
     throw new Error('Failed to fetch characters');
   }
