@@ -1,6 +1,5 @@
 import React from 'react';
 import {View, Text, StyleSheet, Image} from 'react-native';
-
 import {
   CharacterNavigatorRoutes,
   CharacterStackParamList,
@@ -33,6 +32,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: 20,
+    backgroundColor: '#f8f9fa',
   },
   image: {
     width: 200,

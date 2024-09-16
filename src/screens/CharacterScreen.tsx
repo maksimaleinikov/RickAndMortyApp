@@ -29,6 +29,7 @@ const CharactersScreen: React.FC<Props> = ({navigation}) => {
       setCharacters(response.data.results || []);
     } catch (err) {
       setError('Не удалось загрузить данные');
+      //setError((err as Error).message);
     } finally {
       setLoading(false);
     }
