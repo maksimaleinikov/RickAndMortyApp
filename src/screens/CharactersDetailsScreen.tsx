@@ -1,8 +1,6 @@
 import React from 'react';
 import {View, Text, StyleSheet, Image} from 'react-native';
-import {RouteProp} from '@react-navigation/native';
-import {RootStackParamList} from '../navigation/Navigation';
-import {Character} from 'rickmortyapi';
+
 import {
   CharacterNavigatorRoutes,
   CharacterStackParamList,

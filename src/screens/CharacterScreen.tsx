@@ -1,18 +1,10 @@
 import React, {useState, useEffect} from 'react';
-import {
-  View,
-  FlatList,
-  StyleSheet,
-  ActivityIndicator,
-  Text,
-  TouchableOpacity,
-} from 'react-native';
+import {View, FlatList, StyleSheet, Text, TouchableOpacity} from 'react-native';
 import {getCharacters} from 'rickmortyapi';
 import {Character, ApiResponse, Info} from 'rickmortyapi';
 import CharacterCard from '../components/CharactersCard';
-import {StackNavigationProp} from '@react-navigation/stack';
-import {RootStackParamList} from '../navigation/Navigation';
-import {useNavigation} from '@react-navigation/native';
+import Loader from '../components/Loader';
+
 import {
   CharacterNavigatorRoutes,
   CharacterStackParamList,
@@ -28,18 +20,21 @@ const CharactersScreen: React.FC<Props> = ({navigation}) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response: ApiResponse<Info<Character[]>> = await getCharacters();
-        setCharacters(response.data.results || []);
-      } catch (err) {
-        setError('Failed to fetch data');
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      // await new Promise((resolve) => setTimeout(resolve, 3000)); проверка работы Loader
+      // throw new Error('Ошибка загрузки данных');
+      const response: ApiResponse<Info<Character[]>> = await getCharacters();
+      setCharacters(response.data.results || []);
+    } catch (err) {
+      setError('Не удалось загрузить данные');
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchData();
   }, []);
 
@@ -53,11 +48,26 @@ const CharactersScreen: React.FC<Props> = ({navigation}) => {
   );
 
   if (loading) {
-    return <ActivityIndicator size="large" color="#0000ff" />;
+    return <Loader />;
   }
 
   if (error) {
-    return <Text style={styles.errorText}>{error}</Text>;
+    return (
+      <View style={styles.centered}>
+        <Text style={styles.errorText}>{error}</Text>
+        <TouchableOpacity style={styles.retryButton} onPress={fetchData}>
+          <Text style={styles.retryButtonText}>Повторить попытку</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  if (characters.length === 0) {
+    return (
+      <View style={styles.centered}>
+        <Text style={styles.emptyText}>Нет данных</Text>
+      </View>
+    );
   }
 
   return (
@@ -75,10 +85,30 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  centered: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   errorText: {
     color: 'red',
     textAlign: 'center',
-    marginTop: 20,
+    fontSize: 18,
+    marginBottom: 10,
+  },
+  retryButton: {
+    backgroundColor: '#007BFF',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+  },
+  retryButtonText: {
+    color: '#fff',
+    fontSize: 16,
+  },
+  emptyText: {
+    fontSize: 18,
+    color: 'gray',
   },
 });
 
