@@ -1,15 +1,22 @@
 import React, {useState, useEffect} from 'react';
-import {View, FlatList, StyleSheet, Text, TouchableOpacity} from 'react-native';
-import {getCharacters} from 'rickmortyapi';
+import {
+  View,
+  FlatList,
+  Text,
+  ActivityIndicator,
+  StyleSheet,
+  TouchableOpacity,
+} from 'react-native';
+import {getCharacters} from '../api/api';
 import {Character, ApiResponse, Info} from 'rickmortyapi';
-import CharacterCard from '../components/CharactersCard';
+import {NativeStackScreenProps} from 'react-native-screens/lib/typescript/native-stack/types';
 import Loader from '../components/Loader';
+import CharacterCard from '../components/CharactersCard';
 
 import {
   CharacterNavigatorRoutes,
   CharacterStackParamList,
 } from '../navigation/types';
-import {NativeStackScreenProps} from 'react-native-screens/lib/typescript/native-stack/types';
 
 type Props<
   RouteName extends keyof CharacterStackParamList = CharacterNavigatorRoutes,
@@ -17,26 +24,38 @@ type Props<
 
 const CharactersScreen: React.FC<Props> = ({navigation}) => {
   const [characters, setCharacters] = useState<Character[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchData = async () => {
+  const loadCharacters = async () => {
+    if (loading || !hasMore) return;
+    setLoading(true);
     try {
-      setLoading(true);
-      // await new Promise((resolve) => setTimeout(resolve, 3000)); проверка работы Loader
-      // throw new Error('Ошибка загрузки данных');
-      const response: ApiResponse<Info<Character[]>> = await getCharacters();
-      setCharacters(response.data.results || []);
+      const response: ApiResponse<Info<Character[]>> = await getCharacters(
+        page,
+      );
+      const newCharacters = response.data.results || [];
+
+      setCharacters(prevCharacters => [...prevCharacters, ...newCharacters]);
+      setPage(prevPage => prevPage + 1);
+
+      if (
+        response?.data?.info?.next === null ||
+        response?.data?.info?.next === undefined
+      ) {
+        setHasMore(false); // Останавливаем загрузки, если следующей страницы нет
+      }
     } catch (err) {
       setError('Не удалось загрузить данные');
-      //setError((err as Error).message);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchData();
+    loadCharacters();
   }, []);
 
   const renderItem = ({item}: {item: Character}) => (
@@ -48,7 +67,7 @@ const CharactersScreen: React.FC<Props> = ({navigation}) => {
     />
   );
 
-  if (loading) {
+  if (loading && characters.length === 0) {
     return <Loader />;
   }
 
@@ -56,7 +75,7 @@ const CharactersScreen: React.FC<Props> = ({navigation}) => {
     return (
       <View style={styles.centered}>
         <Text style={styles.errorText}>{error}</Text>
-        <TouchableOpacity style={styles.retryButton} onPress={fetchData}>
+        <TouchableOpacity style={styles.retryButton} onPress={loadCharacters}>
           <Text style={styles.retryButtonText}>Повторить попытку</Text>
         </TouchableOpacity>
       </View>
@@ -72,20 +91,22 @@ const CharactersScreen: React.FC<Props> = ({navigation}) => {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={{flex: 1}}>
       <FlatList
         data={characters}
         renderItem={renderItem}
-        keyExtractor={item => item.id.toString()}
+        keyExtractor={(item, index) => `${item.id}-${index}`} // Добавил индекс к id как ключ
+        onEndReached={loadCharacters}
+        onEndReachedThreshold={0.5}
+        ListFooterComponent={
+          loading ? <ActivityIndicator size="large" /> : null
+        }
       />
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
   centered: {
     flex: 1,
     justifyContent: 'center',
